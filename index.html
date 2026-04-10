@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise System Portal</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .animate-shake {
+            animation: shake 0.5s infinite;
+        }
+        .popup {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center font-sans overflow-hidden">
+
+    <div id="app" class="w-full max-w-2xl px-6">
+        <!-- STAGE 1: THE REVERSE LOADING BAR -->
+        <div id="stage-1" class="text-center">
+            <h1 class="text-2xl font-semibold mb-8 text-slate-300">Synchronizing Secure Environment</h1>
+            <div class="w-full bg-slate-800 rounded-full h-4 mb-4 overflow-hidden border border-slate-700 shadow-inner">
+                <div id="progress-bar" class="bg-blue-600 h-full w-0 transition-all duration-300 ease-out"></div>
+            </div>
+            <p id="loading-msg" class="text-slate-500 text-sm font-mono uppercase tracking-wider">Verifying Credentials...</p>
+        </div>
+
+        <!-- STAGE 2: THE JUMPING BUTTON -->
+        <div id="stage-2" class="hidden text-center relative h-96 flex flex-col items-center justify-center">
+            <h1 class="text-2xl font-semibold mb-4 text-slate-300">Identity Confirmation</h1>
+            <p class="text-slate-400 mb-12 text-sm">Our security protocol requires a manual interaction check. Please click the confirmation token below.</p>
+            <button id="runaway-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-10 rounded shadow-lg transition-all absolute border border-blue-400">
+                Click to Continue
+            </button>
+        </div>
+
+        <!-- STAGE 3: THE RIDICULOUS AGREEMENT -->
+        <div id="stage-3" class="hidden">
+            <div class="bg-slate-800 rounded-lg p-8 border border-slate-700 shadow-2xl">
+                <h1 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
+                    End-User Licensing Requirements
+                </h1>
+                <div class="h-64 overflow-y-scroll bg-slate-950 p-4 rounded border border-slate-800 text-xs text-slate-400 mb-6 leading-relaxed font-mono">
+                    <p class="mb-4 text-slate-300 underline font-bold uppercase">Critical User Obligation</p>
+                    <p class="mb-4"><strong>Article I:</strong> The user acknowledges that by entering this portal, they waive all rights to physical property, including but not limited to, unwashed laundry and that one specific Tupperware container missing its lid.</p>
+                    <p class="mb-4"><strong>Article II:</strong> You agree that all 'Bugs' found within the system shall henceforth be referred to as 'Surprise Features' and you will express gratitude upon encountering them.</p>
+                    <p class="mb-4"><strong>Article III:</strong> The user grants the system permission to randomly adjust their monitor brightness by 2% every three minutes to simulate a natural cloud passing over an office window.</p>
+                    <p class="mb-4"><strong>Article IV:</strong> You acknowledge that 'The Cloud' is actually just a very tired server named Steve living in a basement in Nebraska. You agree not to overwhelm Steve.</p>
+                    <p class="mb-4"><strong>Article V:</strong> Clicking 'Accept' confirms that you have never once lied about reading the Terms of Service. If you have, your keyboard will be locked into 'Caps Lock' for the next 48 hours as penance.</p>
+                    <p class="mb-4"><strong>Article VI:</strong> You admit that your most frequent password is 'Password123' and you feel slightly bad about it.</p>
+                </div>
+                <button id="accept-btn" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-4 rounded transition-colors text-sm uppercase tracking-widest border border-slate-600">
+                    I didn't read this, but I accept anyway
+                </button>
+            </div>
+        </div>
+
+        <!-- STAGE 4: THE HYDRA POPUPS (Hidden by default, shown via code) -->
+        <div id="stage-4" class="hidden text-center">
+            <h1 class="text-3xl font-bold text-white mb-4">Access Granted</h1>
+            <p class="text-lg text-slate-400">Welcome to the central interface. Final system configurations are being applied to your session.</p>
+            <div class="mt-8 flex justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+        </div>
+
+        <!-- STAGE 5: THE REVEAL -->
+        <div id="stage-5" class="hidden text-center scale-up">
+            <h1 class="text-5xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500">
+                HOORAY!
+            </h1>
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl inline-block max-w-lg">
+                <p class="text-2xl font-bold text-white mb-4">Congratulations on your patience!</p>
+                <p class="text-slate-400 leading-relaxed">
+                    You've successfully survived the <span class="text-blue-400 font-mono">Endless Loading Bar</span>, the <span class="text-blue-400 font-mono">Sentient Button</span>, the <span class="text-blue-400 font-mono">Absurdist Agreement</span>, and the <span class="text-blue-400 font-mono">Hydra Pop-ups</span>.
+                </p>
+                <p class="mt-6 text-slate-500 italic">Thank you for participating in this UI/UX prank during my AI prompting practice.</p>
+                <button onclick="location.reload()" class="mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition-all">
+                    Relive the Nightmare
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container for Pop-ups -->
+    <div id="popup-container" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <script>
+        const stages = {
+            1: document.getElementById('stage-1'),
+            2: document.getElementById('stage-2'),
+            3: document.getElementById('stage-3'),
+            4: document.getElementById('stage-4'),
+            5: document.getElementById('stage-5')
+        };
+
+        function goToStage(n) {
+            Object.values(stages).forEach(s => s.classList.add('hidden'));
+            stages[n].classList.remove('hidden');
+        }
+
+        // --- STAGE 1 LOGIC ---
+        let progress = 0;
+        let isReversing = false;
+        const progressBar = document.getElementById('progress-bar');
+        const loadingMsg = document.getElementById('loading-msg');
+        
+        const forwardMsgs = [
+            "Initializing secure handshake...", 
+            "Fetching encrypted metadata...", 
+            "Optimizing system architecture..."
+        ];
+        const backwardMsgs = [
+            "Handshake failed: Reverting state...", 
+            "Security mismatch detected...", 
+            "Restoring previous configuration..."
+        ];
+
+        const loadingInterval = setInterval(() => {
+            if (!isReversing) {
+                progress += Math.random() * 4;
+                loadingMsg.innerText = forwardMsgs[Math.min(2, Math.floor(progress / 33.4))];
+                
+                if (progress >= 98) {
+                    progress = 98;
+                    isReversing = true;
+                    progressBar.classList.replace('bg-blue-600', 'bg-orange-600');
+                }
+            } else {
+                progress -= Math.random() * 6;
+                loadingMsg.innerText = backwardMsgs[Math.min(2, Math.floor((100 - progress) / 33.4))];
+                
+                if (progress <= 0) {
+                    progress = 0;
+                    clearInterval(loadingInterval);
+                    setTimeout(() => goToStage(2), 1000);
+                }
+            }
+            progressBar.style.width = progress + "%";
+        }, 150);
+
+        // --- STAGE 2 LOGIC ---
+        const runawayBtn = document.getElementById('runaway-btn');
+        let jumpCount = 0;
+        const jumpMsgs = [
+            "Syncing...", "Timeout: Retry", "Path Obstructed", 
+            "Relocating Node...", "Updating DNS...", 
+            "Endpoint Missing", "Success (Click to verify)"
+        ];
+
+        runawayBtn.addEventListener('mouseenter', () => {
+            if (jumpCount < 7) {
+                const x = Math.random() * 260 - 130;
+                const y = Math.random() * 260 - 130;
+                runawayBtn.style.transform = `translate(${x}px, ${y}px)`;
+                runawayBtn.innerText = jumpMsgs[jumpCount];
+                jumpCount++;
+            }
+        });
+
+        runawayBtn.addEventListener('click', () => {
+            if (jumpCount >= 7) {
+                goToStage(3);
+            }
+        });
+
+        // --- STAGE 3 LOGIC ---
+        document.getElementById('accept-btn').addEventListener('click', () => {
+            goToStage(4);
+            startHydra();
+        });
+
+        // --- STAGE 4 LOGIC & PRANK REVEAL ---
+        let closedCount = 0;
+        const systemWarnings = [
+            "Action Required: Driver Update", "Security Alert: Unrecognized Device",
+            "Memory Optimization Recommended", "Compatibility Mode Enabled",
+            "Privacy Settings Require Review", "Storage Quota Exceeded (99%)",
+            "System Performance Warning", "Network Latency Detected",
+            "Certificate Renewal Pending", "User Profile Not Synchronized"
+        ];
+
+        const colors = ['bg-slate-800', 'bg-blue-900', 'bg-red-900', 'bg-orange-900', 'bg-indigo-900', 'bg-gray-800'];
+
+        function createPopup() {
+            if (closedCount >= 5) return; // Stop creating if threshold reached
+
+            const container = document.getElementById('popup-container');
+            const popup = document.createElement('div');
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const msg = systemWarnings[Math.floor(Math.random() * systemWarnings.length)];
+            
+            const x = Math.random() * 60;
+            const y = Math.random() * 60;
+
+            popup.className = `popup absolute pointer-events-auto w-72 p-4 rounded-md shadow-2xl border border-white/10 ${color} text-slate-100 flex flex-col font-sans animate-shake`;
+            popup.style.left = `${x + 20}%`;
+            popup.style.top = `${y + 20}%`;
+            popup.style.zIndex = 1000 + closedCount;
+
+            popup.innerHTML = `
+                <div class="flex justify-between items-center w-full mb-3 border-b border-white/10 pb-2">
+                    <span class="font-bold text-[10px] uppercase tracking-tighter opacity-80 flex items-center gap-1">
+                        <svg class="w-3 h-3 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        System Message 0x44F
+                    </span>
+                    <button class="close-btn hover:text-red-400 transition-colors text-lg">✕</button>
+                </div>
+                <p class="font-semibold text-sm mb-4 leading-tight">${msg}</p>
+                <div class="flex justify-end gap-2">
+                    <button class="close-btn bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-xs transition-colors">Ignore</button>
+                    <button class="close-btn bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-xs font-bold transition-colors shadow-lg">Fix Now</button>
+                </div>
+            `;
+
+            popup.querySelectorAll('.close-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    popup.remove();
+                    closedCount++;
+
+                    if (closedCount >= 5) {
+                        finishPrank();
+                    } else {
+                        // Spawn 3 more until threshold
+                        for(let i=0; i<3; i++) {
+                            setTimeout(createPopup, i * 150);
+                        }
+                    }
+                });
+            });
+
+            container.appendChild(popup);
+        }
+
+        function startHydra() {
+            for(let i=0; i<5; i++) {
+                setTimeout(createPopup, i * 400);
+            }
+        }
+
+        function finishPrank() {
+            // Remove all remaining popups
+            const container = document.getElementById('popup-container');
+            container.innerHTML = '';
+            
+            // Go to celebration stage
+            goToStage(5);
+
+            // Trigger Confetti
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+</body>
+</html>
